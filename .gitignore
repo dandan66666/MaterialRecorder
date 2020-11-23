@@ -6,4 +6,5 @@ dist
 build
 .idea
 *.sqlite
+*.log
 venv/*

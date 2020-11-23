@@ -3,6 +3,7 @@ import os
 from . import db
 from . import record
 from . import config
+from . import logger
 
 app = Flask(__name__, instance_relative_config=True)
 
@@ -15,6 +16,8 @@ except OSError:
     pass
 
 db.init_app(app)
+
+logger.create_logger(app)
 
 app.register_blueprint(record.mod)
 
