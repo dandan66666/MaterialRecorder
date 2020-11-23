@@ -18,12 +18,4 @@ db.init_app(app)
 
 app.register_blueprint(record.mod)
 
-# @app.before_request
-# def get_db():
-#     db.get_db()
-#
-# @app.after_request
-# def close_db_test(env):
-#     db.close_db()
-
 

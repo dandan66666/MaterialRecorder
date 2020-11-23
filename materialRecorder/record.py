@@ -18,9 +18,9 @@ def close_db(res):
 def hello_world():
     return 'Hello, World!'
 
-@mod.route('/add')
+@mod.route('/add', methods=["POST"])
 def add_record():
-    json_data = request.get_json()
+    json_data = request.form
     name = json_data['name']
     number = json_data['number']
     record_time = json_data['record_time']
@@ -52,9 +52,9 @@ def delete_record(id):
     cursor.execute("DELETE from material where id = {}".format(id))
     g.db.commit()
 
-@mod.route('/modify')
+@mod.route('/modify', methods=['POST'])
 def modify_record(id):
-    json_data = request.get_json()
+    json_data = request.form
     id = json_data['id']
     name = json_data['name']
     number = json_data['number']
@@ -66,9 +66,9 @@ def modify_record(id):
                    .format(name, number, record_time, specifications, price, id))
     g.db.commit()
 
-@mod.route('/search/timeRange')
+@mod.route('/search/timeRange', methods=['POST'])
 def search_record_by_time_range():
-    json_data = request.get_json()
+    json_data = request.form
     start_time = json_data['start_time']
     end_time = json_data['end_time']
     cursor = g.db.cursor()
@@ -76,18 +76,18 @@ def search_record_by_time_range():
                    " material WHERE record_time >= {} AND record_time <= {}".format(start_time, end_time))
     return get_json_from_cursor(cursor)
 
-@mod.route('/search/name')
+@mod.route('/search/name', methods=['POST'])
 def search_record_by_name():
-    json_data = request.get_json()
+    json_data = request.form
     name = json_data['name']
     cursor = g.db.cursor()
     cursor.execute("SELECT id, name, number, record_time, specifications, price FROM"
                    " material WHERE name = '{}'".format(name))
     return get_json_from_cursor(cursor)
 
-@mod.route('/search/specifications')
+@mod.route('/search/specifications', methods=['POST'])
 def search_record_by_specifications():
-    json_data = request.get_json()
+    json_data = request.form
     specifications_regex = "%{}%".format(json_data['specifications'])
     cursor = g.db.cursor()
     cursor.execute("SELECT id, name, number, record_time, specifications, price FROM"

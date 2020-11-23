@@ -1,8 +1,8 @@
 
 default = {
-    'DATABASE': 'materialRecorder.sqlite'
+    'DATABASE': 'instance/materialRecorder.sqlite'
 }
 
 dev= {
-    'DATABASE': 'materialRecorder.sqlite'
+    'DATABASE': 'instance/materialRecorder.sqlite'
 }
