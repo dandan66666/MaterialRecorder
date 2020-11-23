@@ -46,14 +46,14 @@ def get_record_detail(id):
              " specifications": row[4], "price": row[5]}
         return jsonify(d)
 
-@mod.route('/delete/<int:id>')
+@mod.route('/delete/<int:id>', methods=['DELETE'])
 def delete_record(id):
     cursor = g.db.cursor()
     cursor.execute("DELETE from material where id = {}".format(id))
     g.db.commit()
 
 @mod.route('/modify', methods=['POST'])
-def modify_record(id):
+def modify_record():
     json_data = request.form
     id = json_data['id']
     name = json_data['name']
@@ -62,7 +62,7 @@ def modify_record(id):
     specifications = json_data['specifications']
     price = json_data['price']
     cursor = g.db.cursor()
-    cursor.execute("UPDATE material SET name = '{}' number = {} record_time = {} specifications = '{}' price = {} WHERE id = {}"
+    cursor.execute("UPDATE material SET name = '{}', number = {}, record_time = {}, specifications = '{}', price = {} WHERE id = {}"
                    .format(name, number, record_time, specifications, price, id))
     g.db.commit()
 
