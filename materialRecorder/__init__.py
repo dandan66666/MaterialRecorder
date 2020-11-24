@@ -21,4 +21,6 @@ logger.create_logger(app)
 
 app.register_blueprint(record.mod)
 
+app.run()
+
 
