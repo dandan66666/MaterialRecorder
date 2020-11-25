@@ -1,5 +1,5 @@
 from flask import request, jsonify, g, Blueprint, current_app, abort
-from .utils import make_record_response, get_json_from_cursor, RecordSql
+from .utils import make_record_response, get_json_from_cursor, RecordSql, get_valid_float, get_valid_integer
 from .errorCode import ErrorCode
 from . import db
 
@@ -24,7 +24,9 @@ def add_record():
     json_data = request.form
 
     cursor = g.db.cursor()
-    executeStr = RecordSql.add_record(json_data)
+    executeStr = RecordSql.add(json_data)
+    if executeStr is None:
+        make_record_response(None, ErrorCode.WrongInput)
     try:
         cursor.execute(executeStr)
         g.db.commit()
@@ -36,53 +38,63 @@ def add_record():
     finally:
         cursor.close()
 
-@mod.route('/search', methods=['POST'])
-def search_record():
+@mod.route('/list', methods=['POST'])
+def list_record():
     json_data = request.form
-    limit = page_num = json_data['page_num']
-    page_size = json_data['page_size']
+    limit = page_num = get_valid_integer(json_data['page_num'])
+    page_size = get_valid_integer(json_data['page_size'])
     type = json_data['type']
+    if limit is None or page_size is None or type is None:
+        return make_record_response(None, ErrorCode.WrongInput)
     offset = (page_num-1)*page_size
     cursor = g.db.cursor()
     if type == 'time_page':
-        sqlStr = RecordSql.search_by_time_range(json_data)
+        sqlStr = RecordSql.list_by_time_range(json_data)
     elif type == 'name':
-        sqlStr = RecordSql.search_by_name(json_data)
+        sqlStr = RecordSql.list_by_name(json_data)
     elif type == 'specifications':
-        sqlStr = RecordSql.search_by_specifications(json_data)
+        sqlStr = RecordSql.list_by_specifications(json_data)
+    elif type == 'none':
+        sqlStr = RecordSql.list()
     else:
         return make_record_response(None, ErrorCode.SearchTypeNotExist)
+    if sqlStr is None:
+        return make_record_response(None, ErrorCode.WrongInput)
     sqlStr += " LIMIT {} OFFSET {}".format(limit, offset)
     try:
         cursor.execute(sqlStr)
         result = make_record_response(get_json_from_cursor(cursor))
-        current_app.logger.info("Search Record By {} Successfully", type)
+        current_app.logger.info("List Record By {} Successfully", type)
         return result
     except Exception as e:
-        current_app.logger.error("Search Record By {} Error %s", type, e)
+        current_app.logger.error("List Record By {} Error %s", type, e)
         return make_record_response(None, ErrorCode.ServerInternalError)
     finally:
         cursor.close()
 
-@mod.route('/list')
-def list_record():
-    cursor = g.db.cursor()
-    try:
-        cursor.execute(RecordSql.list_record())
-        current_app.logger.info("List Record Successfully.")
-        return make_record_response(get_json_from_cursor(cursor))
-    except Exception as e:
-        current_app.logger.error("List Record Error %s.", e)
-        return make_record_response(None, ErrorCode.ServerInternalError)
-    finally:
-        cursor.close()
+# @mod.route('/list')
+# def list_record():
+#     cursor = g.db.cursor()
+#     try:
+#         cursor.execute(RecordSql.list_record())
+#         current_app.logger.info("List Record Successfully.")
+#         return make_record_response(get_json_from_cursor(cursor))
+#     except Exception as e:
+#         current_app.logger.error("List Record Error %s.", e)
+#         return make_record_response(None, ErrorCode.ServerInternalError)
+#     finally:
+#         cursor.close()
 
 
 @mod.route('/detail/<int:id>')
 def get_record_detail(id):
     cursor = g.db.cursor()
+    executeSql = RecordSql.get_detail(id)
+    if executeSql is None:
+        current_app.logger.error("Get Record (%d) Detail Wrong Input", id)
+        return make_record_response(None, ErrorCode.WrongInput)
     try:
-        cursor.execute(RecordSql.get_record_detail(id))
+        cursor.execute(executeSql)
         result = get_json_from_cursor(cursor)
         if len(result) == 0:
             return make_record_response(result, ErrorCode.RecordNotExist)
@@ -99,8 +111,12 @@ def get_record_detail(id):
 @mod.route('/delete/<int:id>', methods=['DELETE'])
 def delete_record(id):
     cursor = g.db.cursor()
+    executeSql = RecordSql.delete(id)
+    if executeSql is None:
+        current_app.logger.error("Delete Record ({}) Wrong Input".format(id))
+        return make_record_response(None, ErrorCode.WrongInput)
     try:
-        cursor.execute(RecordSql.delete_record(id))
+        cursor.execute(executeSql)
         g.db.commit()
         if cursor.rowcount == 0:
             return make_record_response(None, ErrorCode.RecordNotExist)
@@ -115,17 +131,22 @@ def delete_record(id):
 @mod.route('/modify', methods=['POST'])
 def modify_record():
     json_data = request.form
+    id = json_data['id']
     try:
         cursor = g.db.cursor()
+        if get_valid_integer(id) is None:
+            return make_record_response(None, ErrorCode.WrongInput)
         # 修改前先判断该记录存在且没有改名字，否则返回错误码
-        cursor.execute(RecordSql.get_record_detail(id))
+        cursor.execute(RecordSql.get_detail(id))
         record = cursor.fetchall()
         if len(record == 0):
             return make_record_response(None, ErrorCode.RecordNotExist)
         elif record[0].name != json_data['name']:
             return make_record_response(None, ErrorCode.ChangeNameForbidden)
-
-        cursor.execute(RecordSql.modify_record(json_data))
+        executeSql = RecordSql.modify(json_data)
+        if executeSql is None:
+            return make_record_response(None, ErrorCode.WrongInput)
+        cursor.execute(executeSql)
         g.db.commit()
         current_app.logger.info("Update Record (%d) Successfully.", id)
         return make_record_response(None)

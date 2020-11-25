@@ -4,6 +4,20 @@ from functools import reduce
 import types
 from .errorCode import ErrorCode
 
+def get_valid_integer(arg):
+    if type(arg) == int:
+        return arg
+    if type(arg) == str and arg.isdigit():
+        return int(arg)
+    return None
+
+def get_valid_float(arg):
+    if type(arg) == float:
+        return arg
+    if type(arg) == str and arg.isfloat():
+        return float(arg)
+    return None
+
 def get_json_from_cursor(cursor):
     result = []
     for row in cursor:
@@ -38,53 +52,66 @@ def make_record_response(data, code=ErrorCode.Success):
 
 class RecordSql:
     @staticmethod
-    def search_by_time_range(json_data):
-        start_time = json_data['start_time']
-        end_time = json_data['end_time']
+    def list_by_time_range(json_data):
+        start_time = get_valid_integer(json_data['start_time'])
+        end_time = get_valid_integer(json_data['end_time'])
+        if start_time is None or end_time is None:
+            return None
         return "SELECT id, name, number, record_time, specifications, price FROM"+\
                            " material WHERE record_time >= {} AND record_time <= {}".format(start_time, end_time)
 
     @staticmethod
-    def search_by_name(json_data):
+    def list_by_name(json_data):
         name = json_data['name']
+        if name is None:
+            return None
         return "SELECT id, name, number, record_time, specifications, price FROM"+\
                        " material WHERE name = '{}'".format(name)
 
     @staticmethod
-    def search_by_specifications(json_data):
+    def list_by_specifications(json_data):
+        if json_data['specifications'] is None:
+            return None
         specifications_regex = "%{}%".format(json_data['specifications'])
         return "SELECT id, name, number, record_time, specifications, price FROM"+\
                            " material WHERE specifications LIKE '{}'".format(specifications_regex)
 
     @staticmethod
-    def modify_record(json_data):
-        id = json_data['id']
+    def modify(json_data):
+        id = get_valid_integer(json_data['id'])
         name = json_data['name']
-        number = json_data['number']
-        record_time = json_data['record_time']
+        number = get_valid_integer(json_data['number'])
+        record_time = get_valid_integer(json_data['record_time'])
         specifications = json_data['specifications']
-        price = json_data['price']
+        price = get_valid_float(json_data['price'])
+        if id is None or name is None or number is None or record_time is None \
+            or specifications is None or price is None:
+            return None
         return "UPDATE material SET name = '{}', number = {}, record_time = {}, specifications = '{}', price = {} WHERE id = {}"\
         .format(name, number, record_time, specifications, price, id)
 
     @staticmethod
-    def delete_record(id):
+    def delete(id):
         return "DELETE from material where id = {}".format(id)
 
     @staticmethod
-    def add_record(json_data):
+    def add(json_data):
         name = json_data['name']
-        number = json_data['number']
-        record_time = json_data['record_time']
+        number = get_valid_integer(json_data['number'])
+        record_time = get_valid_integer(json_data['record_time'])
         specifications = json_data['specifications']
-        price = json_data['price']
+        price = get_valid_float(json_data['price'])
+        if name is None or number is None or record_time is None \
+            or specifications is None or price is None:
+            return None
+
         return "INSERT INTO material (name, number, record_time, specifications, price)\
                     VALUES('{}', {}, {}, '{}', {})".format(name, number, record_time, specifications, price)
 
     @staticmethod
-    def get_record_detail(id):
+    def get_detail(id):
         return "SELECT id, name, number, record_time, specifications, price from material where id = {}".format(id)
 
     @staticmethod
-    def list_record():
+    def list():
         return "SELECT id, name, number, record_time, specifications, price from material"

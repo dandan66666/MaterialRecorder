@@ -7,3 +7,4 @@ class ErrorCode(Enum):
     ChangeNameForbidden=-3
     ServerInternalError=-4
     MultiRecords=-5
+    WrongInput=-6
