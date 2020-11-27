@@ -14,7 +14,7 @@ def get_valid_integer(arg):
 def get_valid_float(arg):
     if type(arg) == float:
         return arg
-    if type(arg) == str and arg.isfloat():
+    if type(arg) == str and arg.isdigit():
         return float(arg)
     return None
 
@@ -24,31 +24,37 @@ def get_json_from_cursor(cursor):
         d = {"id": row[0], "name": row[1], "number": row[2], "record_time": row[3],
              "specifications": row[4], "price": row[5]}
         result.append(d)
-    return jsonify(result)
+    return result
 
 def make_record_response(data, code=ErrorCode.Success):
 
-    @staticmethod
     def getErrorMsg(code):
         errorMsgDict = {
             ErrorCode.RecordNotExist : 'Record Do Not Exist',
             ErrorCode.Success: 'Success',
             ErrorCode.ChangeNameForbidden: 'Change Name Forbidden',
-            2: 'Server Internal Error',
-            3: ''
+            ErrorCode.ServerInternalError: 'Server Internal Error',
+            ErrorCode.MultiRecords: 'MultiRecord',
+            ErrorCode.WrongInput: 'WrongInput',
+            ErrorCode.SearchTypeNotExist: 'Search Type Not Exist'
         }
         return errorMsgDict.get(code, 'Wrong Error Code')
 
-    error_code, error_msg = code, getErrorMsg(code)
+    error_code, error_msg = code.value, code.name
     # 无需返回数据仅返回错误码
     if data is None:
         return jsonify({'error_code': error_code, 'error_msg': error_msg})
 
-    records = [data] if type(data) is types.DictType else data
-    total_price = reduce(lambda r1, r2: r1.price+r2.price, records)
+    records = [data] if type(data) == dict else data
+    total_price = 0
+    for record in records:
+        total_price += record['price']
+    # if len(records) >= 2:
+    #     total_price = reduce(lambda r1, r2: r1.price+r2.price, records)
     total_records = len(records)
-    return jsonify({'error_code': error_code, 'error_msg': error_msg,
+    result =  jsonify({'error_code': error_code, 'error_msg': error_msg,
                     'total_price': total_price, 'total_records': total_records, 'records': records})
+    return result
 
 class RecordSql:
     @staticmethod

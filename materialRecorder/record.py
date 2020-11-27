@@ -41,14 +41,14 @@ def add_record():
 @mod.route('/list', methods=['POST'])
 def list_record():
     json_data = request.form
-    limit = page_num = get_valid_integer(json_data['page_num'])
-    page_size = get_valid_integer(json_data['page_size'])
+    page_num = get_valid_integer(json_data['page_num'])
+    limit = page_size = get_valid_integer(json_data['page_size'])
     type = json_data['type']
     if limit is None or page_size is None or type is None:
         return make_record_response(None, ErrorCode.WrongInput)
     offset = (page_num-1)*page_size
     cursor = g.db.cursor()
-    if type == 'time_page':
+    if type == 'time_range':
         sqlStr = RecordSql.list_by_time_range(json_data)
     elif type == 'name':
         sqlStr = RecordSql.list_by_name(json_data)
@@ -61,13 +61,14 @@ def list_record():
     if sqlStr is None:
         return make_record_response(None, ErrorCode.WrongInput)
     sqlStr += " LIMIT {} OFFSET {}".format(limit, offset)
+    print(sqlStr)
     try:
         cursor.execute(sqlStr)
         result = make_record_response(get_json_from_cursor(cursor))
-        current_app.logger.info("List Record By {} Successfully", type)
+        current_app.logger.info("List Record By %s Successfully", type)
         return result
     except Exception as e:
-        current_app.logger.error("List Record By {} Error %s", type, e)
+        current_app.logger.error("List Record By %s Error %s", type, e)
         return make_record_response(None, ErrorCode.ServerInternalError)
     finally:
         cursor.close()
@@ -139,9 +140,9 @@ def modify_record():
         # 修改前先判断该记录存在且没有改名字，否则返回错误码
         cursor.execute(RecordSql.get_detail(id))
         record = cursor.fetchall()
-        if len(record == 0):
+        if len(record) == 0:
             return make_record_response(None, ErrorCode.RecordNotExist)
-        elif record[0].name != json_data['name']:
+        elif record[0]['name'] != json_data['name']:
             return make_record_response(None, ErrorCode.ChangeNameForbidden)
         executeSql = RecordSql.modify(json_data)
         if executeSql is None:
