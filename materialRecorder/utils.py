@@ -1,4 +1,4 @@
-# coding=utf-8
+#coding: utf-8
 from flask import jsonify
 from functools import reduce
 import types
@@ -7,14 +7,14 @@ from .errorCode import ErrorCode
 def get_valid_integer(arg):
     if type(arg) == int:
         return arg
-    if type(arg) == str and arg.isdigit():
+    if (type(arg) == str or type(arg) == unicode) and arg.isdigit():
         return int(arg)
     return None
 
 def get_valid_float(arg):
     if type(arg) == float:
         return arg
-    if type(arg) == str and arg.isdigit():
+    if type(arg) == str or type(arg) == unicode:
         return float(arg)
     return None
 
@@ -107,6 +107,7 @@ class RecordSql:
         record_time = get_valid_integer(json_data['record_time'])
         specifications = json_data['specifications']
         price = get_valid_float(json_data['price'])
+        print('Add Record:', name, number, record_time, specifications, price)
         if name is None or number is None or record_time is None \
             or specifications is None or price is None:
             return None

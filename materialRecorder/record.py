@@ -1,3 +1,4 @@
+#coding: utf-8
 from flask import request, jsonify, g, Blueprint, current_app, abort
 from .utils import make_record_response, get_json_from_cursor, RecordSql, get_valid_float, get_valid_integer
 from .errorCode import ErrorCode
@@ -25,6 +26,7 @@ def add_record():
 
     cursor = g.db.cursor()
     executeStr = RecordSql.add(json_data)
+    print(executeStr)
     if executeStr is None:
         make_record_response(None, ErrorCode.WrongInput)
     try:
