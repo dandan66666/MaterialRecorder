@@ -30,13 +30,13 @@ def make_record_response(data, code=ErrorCode.Success):
 
     def getErrorMsg(code):
         errorMsgDict = {
-            ErrorCode.RecordNotExist : 'Record Do Not Exist',
-            ErrorCode.Success: 'Success',
-            ErrorCode.ChangeNameForbidden: 'Change Name Forbidden',
-            ErrorCode.ServerInternalError: 'Server Internal Error',
-            ErrorCode.MultiRecords: 'MultiRecord',
-            ErrorCode.WrongInput: 'WrongInput',
-            ErrorCode.SearchTypeNotExist: 'Search Type Not Exist'
+            ErrorCode.RecordNotExist : '暂无数据',
+            ErrorCode.Success: '成功',
+            ErrorCode.ChangeNameForbidden: '材料名称不可修改',
+            ErrorCode.ServerInternalError: '服务器错误',
+            ErrorCode.MultiRecords: '存在多条记录',
+            ErrorCode.WrongInput: '错误输入',
+            ErrorCode.SearchTypeNotExist: '搜索的类型不存在'
         }
         return errorMsgDict.get(code, 'Wrong Error Code')
 
