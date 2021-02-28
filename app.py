@@ -11,6 +11,8 @@ app = Flask(__name__, instance_relative_config=True)
 db.init_app(app)
 
 app.register_blueprint(record.mod)
+logger.create_logger(app)
+
 
 if __name__ == '__main__':
     # load the instance config, if it exists, when not testing
@@ -20,9 +22,6 @@ if __name__ == '__main__':
         os.makedirs(app.instance_path)
     except OSError:
         pass
-
-
-    logger.create_logger(app)
 
     # app.register_blueprint(record.mod)
 

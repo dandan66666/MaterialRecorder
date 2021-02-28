@@ -32,10 +32,10 @@ def add_record():
     try:
         cursor.execute(executeStr)
         g.db.commit()
-        current_app.logger.info("Add Record (%s) Successfully.", executeStr)
+        current_app.logger.info("Add Record {%s} Successfully.", executeStr)
         return make_record_response(None)
     except Exception as e:
-        current_app.logger.error("Add Record (%s) Error %s.", executeStr, e)
+        current_app.logger.error("Add Record {%s} Error %s.", executeStr, e)
         return make_record_response(None, ErrorCode.ServerInternalError)
     finally:
         cursor.close()
@@ -55,10 +55,10 @@ def list_record():
     try:
         cursor.execute(sqlStr)
         result = make_record_response(get_json_from_cursor(cursor))
-        current_app.logger.info("List Record By %s Successfully", type)
+        current_app.logger.info("List Record {%s} Successfully", sqlStr)
         return result
     except Exception as e:
-        current_app.logger.error("List Record By %s Error %s", type, e)
+        current_app.logger.error("List Record {%s} Error %s", sqlStr, e)
         return make_record_response(None, ErrorCode.ServerInternalError)
     finally:
         cursor.close()
@@ -82,7 +82,7 @@ def get_record_detail(id):
     cursor = g.db.cursor()
     executeSql = RecordSql.get_detail(id)
     if executeSql is None:
-        current_app.logger.error("Get Record (%d) Detail Wrong Input", id)
+        current_app.logger.error("Get Record {%d} Detail Wrong Input", id)
         return make_record_response(None, ErrorCode.WrongInput)
     try:
         cursor.execute(executeSql)
@@ -91,10 +91,10 @@ def get_record_detail(id):
             return make_record_response(result, ErrorCode.RecordNotExist)
         elif len(result) > 1:
             return make_record_response(None, ErrorCode.MultiRecords)
-        current_app.logger.info("Get Record (%d) Detail Successfully.", id)
+        current_app.logger.info("Get Record {%d} Detail Successfully.", id)
         return make_record_response(result)
     except Exception as e:
-        current_app.logger.error("Get Record (%d) Detail Error %s", id, e)
+        current_app.logger.error("Get Record {%d} Detail Error %s", id, e)
         return make_record_response([], 2)
     finally:
         cursor.close()
@@ -104,17 +104,17 @@ def delete_record(id):
     cursor = g.db.cursor()
     executeSql = RecordSql.delete(id)
     if executeSql is None:
-        current_app.logger.error("Delete Record ({}) Wrong Input".format(id))
+        current_app.logger.error("Delete Record {} Wrong Input", id)
         return make_record_response(None, ErrorCode.WrongInput)
     try:
         cursor.execute(executeSql)
         g.db.commit()
         if cursor.rowcount == 0:
             return make_record_response(None, ErrorCode.RecordNotExist)
-        current_app.logger.info("Delete Record (%d) Successfully.", id)
+        current_app.logger.info("Delete Record {%d} Successfully.", id)
         return make_record_response(None)
     except Exception as e:
-        current_app.logger.error("Get Record (%d) Detail Error %s", id, e)
+        current_app.logger.error("Get Record {%d} Detail Error %s", id, e)
         return make_record_response(None, ErrorCode.ServerInternalError)
     finally:
         cursor.close()
@@ -139,10 +139,10 @@ def modify_record():
             return make_record_response(None, ErrorCode.WrongInput)
         cursor.execute(executeSql)
         g.db.commit()
-        current_app.logger.info("Update Record (%d) Successfully.", id)
+        current_app.logger.info("Update Record {%d} Successfully.", id)
         return make_record_response(None)
     except Exception as e:
-        current_app.logger.error("Update Record (%d) Detail Error %s", id, e)
+        current_app.logger.error("Update Record {%d} Detail Error %s", id, e)
         return make_record_response(None, ErrorCode.ServerInternalError)
     finally:
         cursor.close()
