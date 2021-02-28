@@ -7,4 +7,4 @@ pip install -r requirements.txt
 export FLASK_APP=app.py
 export FLASK_ENV=production
 flask init-db
-flask run -p <Port>
+nohup flask run -p <Port> --host 0.0.0.0 &

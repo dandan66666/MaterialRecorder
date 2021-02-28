@@ -45,21 +45,9 @@ def list_record():
     json_data = request.form
     page_num = get_valid_integer(json_data['page_num'])
     limit = page_size = get_valid_integer(json_data['page_size'])
-    type = json_data['type']
-    if limit is None or page_size is None or type is None:
-        return make_record_response(None, ErrorCode.WrongInput)
     offset = (page_num-1)*page_size
     cursor = g.db.cursor()
-    if type == 'time_range':
-        sqlStr = RecordSql.list_by_time_range(json_data)
-    elif type == 'name':
-        sqlStr = RecordSql.list_by_name(json_data)
-    elif type == 'specifications':
-        sqlStr = RecordSql.list_by_specifications(json_data)
-    elif type == 'none':
-        sqlStr = RecordSql.list()
-    else:
-        return make_record_response(None, ErrorCode.SearchTypeNotExist)
+    sqlStr = RecordSql.list(json_data)
     if sqlStr is None:
         return make_record_response(None, ErrorCode.WrongInput)
     sqlStr += " LIMIT {} OFFSET {}".format(limit, offset)
