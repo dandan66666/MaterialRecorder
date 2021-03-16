@@ -1,6 +1,6 @@
 from flask import Flask
 import os
-from materialRecorder import db, record, config, logger
+from materialRecorder import db, record, config, logger, api
 import sys
 
 reload(sys)
@@ -11,6 +11,7 @@ app = Flask(__name__, instance_relative_config=True)
 db.init_app(app)
 
 app.register_blueprint(record.mod)
+app.register_blueprint(api.mod)
 logger.create_logger(app)
 
 

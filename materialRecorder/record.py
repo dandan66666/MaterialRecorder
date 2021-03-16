@@ -48,13 +48,18 @@ def list_record():
     offset = (page_num-1)*page_size
     cursor = g.db.cursor()
     sqlStr = RecordSql.list(json_data)
-    if sqlStr is None:
+    sqlTotalRecordsStr = RecordSql.list_total_records(json_data)
+    if sqlStr is None or sqlTotalRecordsStr is None:
         return make_record_response(None, ErrorCode.WrongInput)
     sqlStr += " LIMIT {} OFFSET {}".format(limit, offset)
     print(sqlStr)
     try:
         cursor.execute(sqlStr)
-        result = make_record_response(get_json_from_cursor(cursor))
+        records = get_json_from_cursor(cursor)
+        cursor.execute(sqlTotalRecordsStr)
+        rows = cursor.fetchall()
+        total_records = rows[0][0]
+        result = make_record_response(records, ErrorCode.Success, total_records)
         current_app.logger.info("List Record {%s} Successfully", sqlStr)
         return result
     except Exception as e:

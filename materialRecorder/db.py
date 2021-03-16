@@ -8,6 +8,7 @@ import sqlite3
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+    app.cli.add_command(add_column_construction_command)
 
 @click.command('init-db')
 @with_appcontext
@@ -16,6 +17,21 @@ def init_db_command():
     init_db()
     click.echo('Initialized the database.')
 
+@click.command('add-column-construction')
+@with_appcontext
+def add_column_construction_command():
+    """Clear the existing data and create new tables."""
+    if 'db' not in g:
+        g.db = sqlite3.connect(
+            'instance/materialRecorder.sqlite',
+            detect_types=sqlite3.PARSE_DECLTYPES
+        )
+        g.db.row_factory = sqlite3.Row
+    cursor = g.db.cursor()
+    sqlStr = "ALTER TABLE material ADD COLUMN construction TEXT DEFAULT \"\""
+    cursor.execute(sqlStr)
+    g.db.commit()
+    click.echo('Add Column Construction..')
 
 def get_db():
     if 'db' not in g:

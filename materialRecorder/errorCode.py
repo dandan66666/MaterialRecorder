@@ -8,3 +8,4 @@ class ErrorCode(Enum):
     ServerInternalError=-4
     MultiRecords=-5
     WrongInput=-6
+    GetConstructionError=-7
