@@ -1,4 +1,4 @@
-
+# coding: utf-8
 import click
 from flask import current_app, g
 from flask.cli import with_appcontext
@@ -28,7 +28,7 @@ def add_column_construction_command():
         )
         g.db.row_factory = sqlite3.Row
     cursor = g.db.cursor()
-    sqlStr = "ALTER TABLE material ADD COLUMN construction TEXT DEFAULT \"\""
+    sqlStr = "ALTER TABLE material ADD COLUMN construction TEXT DEFAULT \"火炬园\""
     cursor.execute(sqlStr)
     g.db.commit()
     click.echo('Add Column Construction..')
